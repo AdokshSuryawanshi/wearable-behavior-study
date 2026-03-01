@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recovery Tracking & Behavior Change — Research Report</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f2f4f8;color:#1a1a2e;line-height:1.65}
+header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%);color:#fff;padding:52px 44px 44px}
+header h1{font-size:2.1rem;font-weight:800;margin-bottom:6px}
+header .sub{opacity:.7;font-size:.95rem;margin-bottom:18px}
+.badge{display:inline-block;background:rgba(255,255,255,.14);border-radius:20px;padding:3px 13px;font-size:.8rem;margin-right:6px}
+main{max-width:1080px;margin:0 auto;padding:40px 24px 70px}
+h2{font-size:1.25rem;font-weight:700;margin:52px 0 14px;padding-bottom:8px;border-bottom:2.5px solid #dde3ef;color:#0f3460}
+h3{font-size:1rem;font-weight:600;margin:26px 0 8px;color:#333}
+p{margin-bottom:11px;color:#444}
+
+/* Stat row */
+.stats{display:flex;flex-wrap:wrap;gap:14px;margin:22px 0}
+.sc{flex:1;min-width:130px;background:#fff;border-radius:10px;padding:20px 20px 16px;box-shadow:0 1px 4px #0001;border-top:3px solid #0f3460}
+.sc .n{font-size:2rem;font-weight:800;color:#0f3460}
+.sc .l{font-size:.78rem;color:#999;margin-top:2px}
+
+/* Finding box */
+.fbox{background:#eef3ff;border-left:4px solid #0f3460;border-radius:6px;padding:14px 18px;margin:18px 0;font-size:.93rem;color:#1a1a2e}
+.fbox strong{color:#0f3460}
+
+/* Insight callout */
+.insight{background:#fff;border:1px solid #d0dcf0;border-radius:10px;padding:22px 24px;margin:20px 0;box-shadow:0 1px 4px #0001}
+.insight .tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#0f3460;margin-bottom:8px}
+.insight p{margin:0;font-size:.96rem;color:#222}
+
+/* Charts */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+.cbox{background:#fff;border-radius:10px;padding:18px;box-shadow:0 1px 4px #0001}
+.cbox.full{grid-column:1/-1}
+.cbox .cap{font-size:.77rem;color:#aaa;margin-top:8px;text-align:center}
+.cbox img{width:100%;border-radius:4px}
+
+/* Tables */
+.dtable{width:100%;border-collapse:collapse;font-size:.86rem}
+.dtable th{background:#0f3460;color:#fff;padding:9px 12px;text-align:left;font-weight:600}
+.dtable td{padding:8px 12px;border-bottom:1px solid #eee;color:#333}
+.dtable tr:hover td{background:#f8faff}
+.twrap{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px #0001;margin:14px 0}
+
+/* Example cards */
+.ecard{background:#fff;border-radius:8px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px #0001;border-left:3px solid #0f3460}
+.emeta{font-size:.72rem;color:#aaa;margin-bottom:4px}
+.etitle{font-weight:600;color:#0f3460;text-decoration:none;font-size:.93rem;display:block;margin-bottom:4px}
+.etitle:hover{text-decoration:underline}
+.esnip{font-size:.8rem;color:#666}
+
+/* Segment cards */
+.segrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.seg{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px #0001;border-top:3px solid}
+.seg.green{border-color:#2e9e5b}
+.seg.blue{border-color:#2872c8}
+.seg.orange{border-color:#e07b20}
+.seg.red{border-color:#c83232}
+.seg .sname{font-weight:700;font-size:1rem;margin-bottom:6px}
+.seg .sdesc{font-size:.83rem;color:#555}
+.seg .sn{font-size:1.4rem;font-weight:800;color:#0f3460;float:right;margin-top:-28px}
+
+footer{text-align:center;padding:28px;color:#bbb;font-size:.77rem;border-top:1px solid #e2e8f0;margin-top:40px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Recovery Tracking &amp; Behavior Change</h1>
+  <div class="sub">Reddit Consumer Research &mdash; 27 February 2026 &mdash; Self-Initiated Portfolio Project</div>
+  <span class="badge">r/whoop</span>
+  <span class="badge">r/ouraring</span>
+  <span class="badge">r/QuantifiedSelf</span>
+  <span class="badge">r/Garmin</span>
+</header>
+
+<main>
+
+<h2>Research Question</h2>
+<div class="insight">
+  <div class="tag">Core Question</div>
+  <p>Does tracking recovery (HRV, sleep, readiness scores) actually change user behavior &mdash; or does it primarily generate awareness without driving meaningful action?</p>
+</div>
+
+<h2>Overview</h2>
+<div class="stats">
+  <div class="sc"><div class="n">664</div><div class="l">Total items analyzed</div></div>
+  <div class="sc"><div class="n">664</div><div class="l">Reddit posts</div></div>
+  <div class="sc"><div class="n">0</div><div class="l">Comments</div></div>
+  <div class="sc"><div class="n">4</div><div class="l">Subreddits</div></div>
+  <div class="sc"><div class="n">449</div><div class="l">Items classified (67%)</div></div>
+  <div class="sc"><div class="n">59.0%</div><div class="l">Positive sentiment</div></div>
+</div>
+
+<h2>Key Finding</h2>
+<div class="fbox">
+  <strong>The answer isn&rsquo;t &ldquo;yes&rdquo; or &ldquo;no&rdquo; &mdash; it&rsquo;s &ldquo;wants to, but can&rsquo;t.&rdquo;</strong><br><br>
+  The dominant theme across all four communities is <strong>Friction &amp; Barriers</strong> (248 items) &mdash; users who are aware of their recovery data and want to act on it, but face real obstacles: scheduling conflicts, unclear guidance, skepticism about accuracy, or simply not knowing what to do differently. This is more nuanced than simple awareness or passive tracking. The awareness-action gap exists, but its primary driver is <em>friction</em>, not apathy.
+</div>
+
+<h2>Behavioral Segments</h2>
+<p>Four behavioral profiles emerged from thematic analysis of 449 classified items:</p>
+
+<div class="segrow">
+  <div class="seg green">
+    <div class="sn">126</div>
+    <div class="sname">🟢 Changers</div>
+    <div class="sdesc">Users who report meaningfully changing habits &mdash; sleep routines, alcohol, training load &mdash; because of recovery tracking. Often describe a specific &ldquo;turning point&rdquo; moment.</div>
+  </div>
+  <div class="seg orange">
+    <div class="sn">248</div>
+    <div class="sname">🟠 Friction-Stuck</div>
+    <div class="sdesc">Largest segment. Engaged with data, want to act, but face barriers: conflicting schedules, unclear recommendations, accuracy doubts, or no actionable path forward.</div>
+  </div>
+  <div class="seg blue">
+    <div class="sn">55</div>
+    <div class="sname">🔵 Responders</div>
+    <div class="sdesc">Users who actively respond to specific scores &mdash; taking rest days, skipping workouts, adjusting intensity. Behavior is episodic rather than habitual.</div>
+  </div>
+  <div class="seg red">
+    <div class="sn">50</div>
+    <div class="sname">🔴 Watchers</div>
+    <div class="sdesc">Track and check scores regularly but explicitly report not changing behavior. &ldquo;Train anyway,&rdquo; &ldquo;doesn&rsquo;t influence what I do.&rdquo; Data is informational, not actionable.</div>
+  </div>
+</div>
+
+<h2>Theme Breakdown</h2>
+<p>Items were coded against 7 behavioral themes using pattern matching on language from actual posts and comments. Items could match multiple themes.</p>
+
+<div class="twrap"><table class="dataframe dtable">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Theme</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Friction / Barriers</td>
+      <td>248</td>
+    </tr>
+    <tr>
+      <td>Unclassified</td>
+      <td>215</td>
+    </tr>
+    <tr>
+      <td>Positive Impact</td>
+      <td>175</td>
+    </tr>
+    <tr>
+      <td>Behaviour Change</td>
+      <td>126</td>
+    </tr>
+    <tr>
+      <td>Skeptical</td>
+      <td>124</td>
+    </tr>
+    <tr>
+      <td>Anxiety / Obsession</td>
+      <td>88</td>
+    </tr>
+    <tr>
+      <td>Acted on Score</td>
+      <td>55</td>
+    </tr>
+    <tr>
+      <td>Awareness, No Action</td>
+      <td>50</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<div class="fbox">
+  <strong>Notable:</strong> Friction/Barriers is the single largest theme at 248 items &mdash; nearly 3x the size of &ldquo;Acted on Score&rdquo; (55). This suggests the behavior change problem is primarily a <em>product design problem</em>, not a user motivation problem. Users want to act &mdash; they don&rsquo;t know how.
+</div>
+
+<h2>Sentiment by Community</h2>
+<div class="fbox">
+  Overall sentiment skews positive (59.0% positive vs 14.9% negative), but this varies significantly by community. r/whoop skews most positive; r/QuantifiedSelf and r/Garmin are more analytical and critical &mdash; reflecting fundamentally different user personas within the same product category.
+</div>
+
+<h2>Keyword Frequency</h2>
+<p>Top keywords by mention count across all posts and comments:</p>
+<div class="twrap"><table class="dataframe dtable">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Keyword</th>
+      <th>Mentions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>hrv</td>
+      <td>207</td>
+    </tr>
+    <tr>
+      <td>habit</td>
+      <td>155</td>
+    </tr>
+    <tr>
+      <td>readiness</td>
+      <td>141</td>
+    </tr>
+    <tr>
+      <td>accurate</td>
+      <td>116</td>
+    </tr>
+    <tr>
+      <td>changed</td>
+      <td>110</td>
+    </tr>
+    <tr>
+      <td>sleep score</td>
+      <td>95</td>
+    </tr>
+    <tr>
+      <td>routine</td>
+      <td>74</td>
+    </tr>
+    <tr>
+      <td>strain</td>
+      <td>73</td>
+    </tr>
+    <tr>
+      <td>aware</td>
+      <td>73</td>
+    </tr>
+    <tr>
+      <td>recovery score</td>
+      <td>71</td>
+    </tr>
+    <tr>
+      <td>behavior</td>
+      <td>64</td>
+    </tr>
+    <tr>
+      <td>useless</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <td>ignore</td>
+      <td>59</td>
+    </tr>
+    <tr>
+      <td>lifestyle</td>
+      <td>50</td>
+    </tr>
+    <tr>
+      <td>trust</td>
+      <td>48</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>Example Posts by Theme</h2>
+
+<h3>🟠 Friction / Barriers (n=248)</h3>
+
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 1041 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1408zds/garmin_daily_suggested_workouts_my_dos_and_donts/" target="_blank" class="etitle">Garmin daily suggested workouts - my do's and don't's after 8 months of usage</a>
+          <p class="esnip">m48 with a sub 40 10k and sub 1h25 hm pb currently. been running competitively for more than 15 years.have been training exclusively with the dsw feature these past 8 months after an it band incident  that sidelined me f...</p>
+        </div>
+        <div class="ecard">
+          <div class="emeta">r/ouraring &nbsp;&middot;&nbsp; 757 upvotes</div>
+          <a href="https://reddit.com/r/ouraring/comments/1i1z4bt/psa_to_oura_luteal_phase_is_not_a_sickness/" target="_blank" class="etitle">Psa to oura: luteal phase is not a sickness</a>
+          <p class="esnip">yes my temperature is up - oura knows where i am in my cycle, so it should know that is normal. i am offended every single time i wake up to "turn on rest mode?"   devs, please work this out.     edit: i have pmdd, yes i...</p>
+        </div>
+
+<h3>🟢 Behaviour Change (n=126)</h3>
+
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 1052 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1oxackr/perfect_sleep_unlocked_the_100_club/" target="_blank" class="etitle">Perfect sleep unlocked, the 100 club</a>
+          <p class="esnip">i finally did it, after years of resisting wearables, i’ve adopted a garmin watch.  i always avoided getting one because i didn’t want more data and notifications, or something else buzzing on my wrist. but after constan...</p>
+        </div>
+        <div class="ecard">
+          <div class="emeta">r/whoop &nbsp;&middot;&nbsp; 856 upvotes</div>
+          <a href="https://reddit.com/r/whoop/comments/1gmek2w/whoop_huel_changed_my_life/" target="_blank" class="etitle">Whoop + huel changed my life</a>
+          <p class="esnip">after 2 years i am not leaving whoop. in contrast to the neverending stream of negative comments, i will be keeping mine.  all my adult life i wanted to be on a before-&gt;after poster.  i knew i had it in me, but it too...</p>
+        </div>
+
+<h3>🔵 Acted on Score (n=55)</h3>
+
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 250 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1qys761/i_ignored_most_garmin_metrics_for_years_turns_out/" target="_blank" class="etitle">I ignored most garmin metrics for years. turns out they were the most important ones</a>
+          <p class="esnip">**tl;dr:** paying attention to sleep, stress, body battery, and spo₂ on my garmin epix (gen 2) led me to uncover a real sleep-breathing issue. treating it significantly improved my sleep, energy, and daily functioning. w...</p>
+        </div>
+        <div class="ecard">
+          <div class="emeta">r/QuantifiedSelf &nbsp;&middot;&nbsp; 210 upvotes</div>
+          <a href="https://reddit.com/r/QuantifiedSelf/comments/1i7uu6c/i_open_sourced_my_project_to_analyze_your_years/" target="_blank" class="etitle">I open sourced my project to analyze your years of apple health data with a.i.</a>
+          <p class="esnip">update: watch my youtube explainer here [https://youtu.be/5fcfrybxhjg?si=5fg9vvhorvqenyhw](https://youtu.be/5fcfrybxhjg?si=5fg9vvhorvqenyhw)  i was playing around and found out that you can export all your apple health d...</p>
+        </div>
+
+<h3>🔴 Awareness, No Action (n=50)</h3>
+
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 994 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1mu8086/why_does_garmin_ignore_menstrual_cycle_data/" target="_blank" class="etitle">Why does garmin ignore menstrual cycle data?</a>
+          <p class="esnip">i really really like my garmin and use the wellness and training features religiously in order to reconcile my health with being a corporate slave. it’s helped me keep track of calorie expenditure, heart rate, stress, tr...</p>
+        </div>
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 513 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1mnb33z/my_garmin_review_or_rant_after_7_years_poor/" target="_blank" class="etitle">My garmin review (or rant) after 7 years: poor software</a>
+          <p class="esnip"># tldr:  garmin software is very unpolished (trying to be polite here) for premium priced hardware. and now they would like you to pay a subscription fee to get even more half-assed features? finishing this text i realiz...</p>
+        </div>
+
+<h3>😟 Anxiety / Obsession</h3>
+
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 742 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1qod0sp/my_hrv_after_quitting_drinking/" target="_blank" class="etitle">My hrv after quitting drinking</a>
+          <p class="esnip">had a stressful final semester of my masters degree where i had a horrible diet with way too much junk food and alcohol to cope with the stress from working full time and doing course work in the evening. i went from wor...</p>
+        </div>
+        <div class="ecard">
+          <div class="emeta">r/ouraring &nbsp;&middot;&nbsp; 615 upvotes</div>
+          <a href="https://reddit.com/r/ouraring/comments/1l0n630/14_months_in_review_and_why_im_quitting_the_ring/" target="_blank" class="etitle">14 months in review and why i’m quitting the ring</a>
+          <p class="esnip">hello fellow oura users! i decided this weekend to stop my 1+ year of wearing the oura ring (with no skipped days!). because there are so many posts with folks questioning whether to get a ring and wondering about experi...</p>
+        </div>
+
+<h3>🤔 Skeptical</h3>
+
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 7100 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1lt4j03/garmin_dont_become_like_fitbit_we_didnt_buy_your/" target="_blank" class="etitle">Garmin, don’t become like fitbit. we didn’t buy your watches to pay for data we already own.</a>
+          <p class="esnip">dear garmin,  we, long-time users of your watches, are deeply concerned about the path you're taking.  garmin used to stand out as the one brand that gave us full access to training insights, body metrics, and performanc...</p>
+        </div>
+        <div class="ecard">
+          <div class="emeta">r/Garmin &nbsp;&middot;&nbsp; 1041 upvotes</div>
+          <a href="https://reddit.com/r/Garmin/comments/1408zds/garmin_daily_suggested_workouts_my_dos_and_donts/" target="_blank" class="etitle">Garmin daily suggested workouts - my do's and don't's after 8 months of usage</a>
+          <p class="esnip">m48 with a sub 40 10k and sub 1h25 hm pb currently. been running competitively for more than 15 years.have been training exclusively with the dsw feature these past 8 months after an it band incident  that sidelined me f...</p>
+        </div>
+
+<h2>Limitations</h2>
+
+<ul style="list-style:none;padding:0;margin:0 0 8px">
+  <li style="padding:14px 0;border-bottom:1px solid #e8e4de">
+    <strong>Sample</strong> — Reddit skews toward engaged, opinionated users. The silent majority of wearable owners is absent. Findings characterize vocal communities, not the broader population.
+  </li>
+  <li style="padding:14px 0;border-bottom:1px solid #e8e4de">
+    <strong>Observational only</strong> — the study captures what users say publicly, not what they do. No causal claims are made. Behavioral tracking data would be needed to confirm whether reported friction maps to actual drop-off.
+  </li>
+  <li style="padding:14px 0;border-bottom:1px solid #e8e4de">
+    <strong>Coding</strong> — keyword pattern matching misses irony and context-dependent language. A conservative threshold was applied throughout. Unclassified items reflect ambiguity, not missing signal.
+  </li>
+  <li style="padding:14px 0;border-bottom:1px solid #e8e4de">
+    <strong>Data</strong> — Reddit's algorithm favors strong reactions. Mundane experiences are underrepresented. Data spans 2023 to 2026 without controlling for product or pricing changes across that period.
+  </li>
+  <li style="padding:14px 0;border-bottom:1px solid #e8e4de">
+    <strong>Scope</strong> — four communities only. Fitbit, Apple Watch, and Samsung Health users are absent. No demographic data available. English language only.
+  </li>
+  <li style="padding:14px 0;border-bottom:1px solid #e8e4de">
+    <strong>Primary data</strong> — none, by design. Netnography at this stage surfaces the right questions for follow-on interviews. A qualitative study with the Friction-Stuck segment would add depth this study cannot produce alone.
+  </li>
+  <li style="padding:14px 0">
+    <strong>What this does not change</strong> — the friction finding held across four communities with different user personas. The 68% classification rate reflects conservative coding, not weak signal. Findings stand within their defined scope.
+  </li>
+</ul>
+
+<h2>Implications for Product</h2>
+<div class="insight">
+  <div class="tag">Product Insight 1</div>
+  <p>The biggest opportunity is not acquiring new users or adding more metrics &mdash; it&rsquo;s closing the gap between awareness and action for the Friction-Stuck segment. Clearer, more prescriptive recommendations (&ldquo;here is what to do today&rdquo;) could convert passive trackers into active responders.</p>
+</div>
+<div class="insight">
+  <div class="tag">Product Insight 2</div>
+  <p>Anxiety and obsession are an underappreciated side effect of recovery tracking. Products that surface scores without contextual guidance risk creating unhealthy relationships with data, particularly among high-engagement users.</p>
+</div>
+<div class="insight">
+  <div class="tag">Product Insight 3</div>
+  <p>Community persona matters. r/whoop users respond positively to motivation and gamification. r/QuantifiedSelf users want methodology and accuracy. A single product experience cannot optimally serve both &mdash; suggesting value in user segmentation within the product itself.</p>
+</div>
+
+<h2>Methodology Note</h2>
+<p>Data collected via Reddit public JSON API across r/whoop, r/ouraring, r/QuantifiedSelf, and r/Garmin. Thematic coding performed using regex pattern matching on post and comment text. Sentiment scored using lexicon-based classification. Limitations: self-selection bias (Reddit skews engaged users), no longitudinal data, observational only. Mixed-methods design: qualitative thematic analysis primary, quantitative frequency analysis supporting.</p>
+
+</main>
+<footer>Recovery Tracking &amp; Behavior Change Research &mdash; 27 February 2026 &mdash; Adoksh &mdash; Self-Initiated Portfolio Project</footer>
+</body>
+</html>

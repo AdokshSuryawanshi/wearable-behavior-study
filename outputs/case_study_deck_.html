@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Tracking & Behavior Change, Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:     #0d0d12;
+  --paper:   #f7f5f0;
+  --accent:  #c8492a;
+  --gold:    #c49a3c;
+  --muted:   #6b6760;
+  --rule:    #d4cfc8;
+  --white:   #ffffff;
+  --card-bg: #faf9f6;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── SLIDE SYSTEM ── */
+.slide {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 72px 10vw;
+  position: relative;
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.slide.visible { opacity: 1; transform: translateY(0); }
+
+/* slide alternating backgrounds */
+.slide:nth-child(even) { background: var(--white); }
+.slide.dark {
+  background: var(--ink);
+  color: var(--paper);
+  --rule: rgba(255,255,255,0.12);
+}
+.slide.dark .muted { color: rgba(247,245,240,0.5); }
+.slide.dark .rule { background: rgba(255,255,255,0.12); }
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 10vw;
+  background: rgba(247,245,240,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.nav-brand { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--ink); }
+.nav-links { display: flex; gap: 28px; }
+.nav-links a {
+  font-size: .78rem; font-weight: 500; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+  text-decoration: none; transition: color .2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.slide-counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem; color: var(--muted);
+}
+
+/* ── COVER SLIDE ── */
+.cover {
+  background: var(--ink);
+  color: var(--paper);
+  min-height: 100vh;
+  padding-top: 100px;
+}
+.cover-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem; letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.cover-eyebrow::before {
+  content: '';
+  display: block; width: 32px; height: 1px;
+  background: var(--gold);
+}
+.cover h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.8rem, 6vw, 5.2rem);
+  line-height: 1.08;
+  margin-bottom: 20px;
+  max-width: 800px;
+}
+.cover h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+.cover-sub {
+  font-size: 1.1rem; font-weight: 300;
+  color: rgba(247,245,240,0.6);
+  max-width: 540px;
+  margin-bottom: 56px;
+  line-height: 1.7;
+}
+.cover-meta {
+  display: flex; gap: 40px; flex-wrap: wrap;
+  border-top: 1px solid rgba(255,255,255,.12);
+  padding-top: 32px;
+}
+.cover-meta-item .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(247,245,240,0.4); margin-bottom: 4px;
+}
+.cover-meta-item .value {
+  font-size: .92rem; color: rgba(247,245,240,0.85);
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after {
+  content: ''; flex: 1;
+  height: 1px; background: currentColor; opacity: .3;
+  max-width: 48px;
+}
+
+/* ── HEADINGS ── */
+.slide-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.15;
+  margin-bottom: 24px;
+}
+.slide-title em { font-style: italic; color: var(--accent); }
+.dark .slide-title em { color: var(--gold); }
+
+.slide-body {
+  font-size: 1.05rem; font-weight: 300;
+  color: var(--muted);
+  max-width: 640px;
+  line-height: 1.75;
+}
+.dark .slide-body { color: rgba(247,245,240,0.6); }
+
+/* ── RULE ── */
+.rule {
+  width: 48px; height: 3px;
+  background: var(--accent);
+  margin: 20px 0 32px;
+  border-radius: 2px;
+}
+.dark .rule { background: var(--gold); }
+
+/* ── STAT GRID ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 2px;
+  margin: 36px 0;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.stat-cell {
+  background: var(--white);
+  padding: 28px 24px;
+}
+.dark .stat-cell { background: rgba(255,255,255,.04); }
+.stat-cell .num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.8rem;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.dark .stat-cell .num { color: var(--paper); }
+.stat-cell .num.accent { color: var(--accent); }
+.stat-cell .num.gold   { color: var(--gold); }
+.stat-cell .lbl {
+  font-size: .78rem; font-weight: 500; letter-spacing: .04em;
+  color: var(--muted);
+}
+
+/* ── FINDING BOX ── */
+.finding {
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px;
+  margin: 28px 0;
+  background: rgba(200,73,42,.06);
+  border-radius: 0 6px 6px 0;
+}
+.dark .finding {
+  background: rgba(196,154,60,.08);
+  border-color: var(--gold);
+}
+.finding .ftag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+.dark .finding .ftag { color: var(--gold); }
+.finding p {
+  font-size: .97rem; line-height: 1.7; color: var(--ink);
+  font-weight: 400;
+}
+.dark .finding p { color: rgba(247,245,240,0.85); }
+
+/* ── SEGMENT CARDS ── */
+.seg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 32px 0;
+}
+@media (max-width: 640px) { .seg-grid { grid-template-columns: 1fr; } }
+.seg-card {
+  padding: 24px;
+  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--rule);
+  position: relative;
+  overflow: hidden;
+}
+.dark .seg-card { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.1); }
+.seg-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.seg-card.orange::before { background: #e07b20; }
+.seg-card.green::before  { background: #2e9e5b; }
+.seg-card.blue::before   { background: #2872c8; }
+.seg-card.red::before    { background: #c83232; }
+.seg-n {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.4rem; line-height: 1;
+  margin-bottom: 4px;
+}
+.seg-card.orange .seg-n { color: #e07b20; }
+.seg-card.green  .seg-n { color: #2e9e5b; }
+.seg-card.blue   .seg-n { color: #2872c8; }
+.seg-card.red    .seg-n { color: #c83232; }
+.seg-name {
+  font-weight: 600; font-size: .95rem;
+  margin-bottom: 8px; color: var(--ink);
+}
+.dark .seg-name { color: var(--paper); }
+.seg-desc {
+  font-size: .83rem; line-height: 1.6;
+  color: var(--muted); font-weight: 300;
+}
+
+/* ── QUOTE CARD ── */
+.quote-card {
+  margin: 28px 0;
+  padding: 28px 32px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 8px;
+  position: relative;
+}
+.dark .quote-card { background: rgba(255,255,255,.06); }
+.quote-card::before {
+  content: '\201C';
+  font-family: 'DM Serif Display', serif;
+  font-size: 5rem; line-height: 1;
+  color: var(--gold); opacity: .4;
+  position: absolute; top: 8px; left: 20px;
+}
+.quote-card blockquote {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem; line-height: 1.6;
+  font-style: italic;
+  padding-top: 24px;
+  margin-bottom: 16px;
+}
+.quote-card .qsource {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--gold); opacity: .8;
+}
+
+/* ── INSIGHT LIST ── */
+.insight-list { margin: 28px 0; list-style: none; }
+.insight-list li {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.insight-list li:last-child { border-bottom: none; }
+.insight-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem; color: var(--accent);
+  line-height: 1; min-width: 32px;
+  flex-shrink: 0;
+}
+.dark .insight-num { color: var(--gold); }
+.insight-content .ititle {
+  font-weight: 600; margin-bottom: 4px; font-size: .97rem;
+}
+.insight-content .ibody {
+  font-size: .87rem; color: var(--muted); line-height: 1.65;
+}
+.dark .insight-content .ibody { color: rgba(247,245,240,0.55); }
+
+/* ── THEME BAR CHART ── */
+.theme-bars { margin: 32px 0; }
+.theme-bar-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.bar-label {
+  font-size: .82rem; font-weight: 500;
+  min-width: 170px; color: var(--ink);
+}
+.dark .bar-label { color: var(--paper); }
+.bar-track {
+  flex: 1; height: 10px; background: rgba(0,0,0,.08);
+  border-radius: 5px; overflow: hidden;
+}
+.dark .bar-track { background: rgba(255,255,255,.1); }
+.bar-fill {
+  height: 100%; border-radius: 5px;
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+  width: 0;
+}
+.bar-fill.orange { background: #e07b20; }
+.bar-fill.teal   { background: #2e9e5b; }
+.bar-fill.blue   { background: #2872c8; }
+.bar-fill.red    { background: #c83232; }
+.bar-fill.gray   { background: #888; }
+.bar-fill.rust   { background: var(--accent); }
+.bar-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem; color: var(--muted); min-width: 32px;
+}
+
+/* ── METHODOLOGY TABLE ── */
+.meth-table {
+  width: 100%; border-collapse: collapse;
+  margin: 24px 0; font-size: .88rem;
+}
+.meth-table th {
+  text-align: left; padding: 10px 14px;
+  background: var(--ink); color: var(--paper);
+  font-weight: 500; font-size: .78rem; letter-spacing: .04em;
+}
+.meth-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--muted);
+  vertical-align: top;
+}
+.meth-table tr:last-child td { border-bottom: none; }
+.meth-table td:first-child { font-weight: 500; color: var(--ink); }
+.dark .meth-table td:first-child { color: var(--paper); }
+
+/* ── FINAL SLIDE ── */
+.final-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin: 32px 0;
+}
+@media (max-width: 700px) { .final-grid { grid-template-columns: 1fr; } }
+.final-card {
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,.04);
+}
+.final-card .fc-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 10px;
+}
+.final-card .fc-title {
+  font-weight: 600; font-size: .95rem;
+  color: var(--paper); margin-bottom: 8px;
+}
+.final-card .fc-body {
+  font-size: .82rem; color: rgba(247,245,240,0.5);
+  line-height: 1.65;
+}
+
+/* ── SCROLL PROGRESS ── */
+.progress-bar {
+  position: fixed; top: 0; left: 0;
+  height: 2px; background: var(--accent);
+  z-index: 200; transition: width .1s linear;
+  width: 0%;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<nav>
+  <div class="nav-brand">Recovery Tracking × Behavior Change</div>
+  <div class="nav-links">
+    <a href="#context">Context</a>
+    <a href="#method">Method</a>
+    <a href="#findings">Findings</a>
+    <a href="#segments">Segments</a>
+    <a href="#implications">Implications</a>
+  </div>
+  <div class="slide-counter" id="counter">01 / 10</div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 1: COVER -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide cover dark visible" data-slide="1">
+  <div class="cover-eyebrow">Wearable Behavior Study &nbsp;·&nbsp; February 2026</div>
+  <h1>Does recovery tracking <em>change</em> what people do?</h1>
+  <p class="cover-sub">A mixed-methods consumer research study across four fitness wearable communities, exploring the gap between data awareness and behavioral action.</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="label">Researcher</div>
+      <div class="value">Adoksh</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Data Sources</div>
+      <div class="value">r/whoop · r/ouraring · r/QuantifiedSelf · r/Garmin</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Items Analyzed</div>
+      <div class="value">664 posts & comments</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Method</div>
+      <div class="value">Qualitative thematic analysis + sentiment scoring</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 2: CONTEXT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide" id="context" data-slide="2">
+  <div class="section-label">01, Context</div>
+  <h2 class="slide-title">Why this question. Why now.</h2>
+  <div class="rule"></div>
+  <p class="slide-body">The wearables market is projected to grow from $52B in 2024 to $190B by 2032. Every major brand, Whoop, Oura, Garmin, Apple, has invested heavily in recovery features: HRV scores, readiness indexes, sleep quality ratings. But the core product question remains publicly unanswered.</p>
+
+  <div class="finding" style="margin-top:32px">
+    <div class="ftag">Research Question</div>
+    <p>Does tracking recovery (HRV, sleep, readiness) actually change user behavior, or does it primarily generate awareness without driving meaningful action?</p>
+  </div>
+
+  <p class="slide-body" style="margin-top:24px">This question has direct implications for product retention, feature design, and AI coaching UX. Understanding it could redefine how companies communicate insights and design intervention layers.</p>
+
+  <div class="stat-grid" style="margin-top:36px">
+    <div class="stat-cell">
+      <div class="num accent">$190B</div>
+      <div class="lbl">Wearables market by 2032</div>
+    </div>
+    <div class="stat-cell">
+      <div class="num">4</div>
+      <div class="lbl">Major platforms analyzed</div>
+    </div>
+    <div class="stat-cell">
+      <div class="num accent">664</div>
+      <div class="lbl">Posts & comments studied</div>
+    </div>
+    <div class="stat-cell">
+      <div class="num">68%</div>
+      <div class="lbl">Classification rate</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 3: METHODOLOGY -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide dark" id="method" data-slide="3">
+  <div class="section-label">02, Methodology</div>
+  <h2 class="slide-title">How the study was <em>designed</em></h2>
+  <div class="rule"></div>
+
+  <table class="meth-table">
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th>Decision</th>
+        <th>Rationale</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Design</td>
+        <td>Mixed-methods: qual-led, quant-supported</td>
+        <td>Behavioral question requires language-level analysis; quantification validates patterns at scale</td>
+      </tr>
+      <tr>
+        <td>Primary data</td>
+        <td>Reddit posts & comments (4 subreddits)</td>
+        <td>Unprompted, unsolicited discourse, no researcher priming or survey bias</td>
+      </tr>
+      <tr>
+        <td>Analysis</td>
+        <td>Pattern-coded thematic classification</td>
+        <td>7 behavioral themes coded via regex on actual user language; multi-theme tagging allowed</td>
+      </tr>
+      <tr>
+        <td>Sentiment</td>
+        <td>Lexicon-based scoring (no LLM)</td>
+        <td>Reproducible, transparent, no black-box interpretation</td>
+      </tr>
+      <tr>
+        <td>Limitations</td>
+        <td>Self-selection, observational only</td>
+        <td>Reddit users skew engaged; no causality claim; cross-sectional not longitudinal</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="finding">
+    <div class="ftag">Researcher Positionality</div>
+    <p>As a former international-level volleyball athlete with deep personal engagement in fitness and recovery science, the researcher brings lived intuition to this domain, enabling sharper pattern recognition and more nuanced interpretation of behavioral language than a purely analytical approach.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 4: KEY FINDING -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide" data-slide="4" id="findings">
+  <div class="section-label">03, Key Finding</div>
+  <h2 class="slide-title">The answer isn't yes or no. <em>It's friction.</em></h2>
+  <div class="rule"></div>
+
+  <p class="slide-body">The hypothesis going in was binary: either tracking changes behavior, or it doesn't. The data revealed a more nuanced and more commercially valuable third answer.</p>
+
+  <div class="finding" style="margin-top: 28px;">
+    <div class="ftag">Primary Finding</div>
+    <p><strong>The dominant experience is not action, not passivity, it's wanting to act but being blocked.</strong> Friction & Barriers is the single largest theme at 248 items, nearly 3x the size of "Acted on Score" (55 items). Users are engaged with their data. The awareness-action gap is real, but its primary driver is a <em>product design problem</em>, not a motivation problem.</p>
+  </div>
+
+  <div class="theme-bars" style="margin-top:36px">
+    <div class="theme-bar-row">
+      <div class="bar-label">Friction / Barriers</div>
+      <div class="bar-track"><div class="bar-fill orange" data-width="100"></div></div>
+      <div class="bar-count">248</div>
+    </div>
+    <div class="theme-bar-row">
+      <div class="bar-label">Behaviour Change</div>
+      <div class="bar-track"><div class="bar-fill teal" data-width="51"></div></div>
+      <div class="bar-count">126</div>
+    </div>
+    <div class="theme-bar-row">
+      <div class="bar-label">Positive Impact</div>
+      <div class="bar-track"><div class="bar-fill blue" data-width="71"></div></div>
+      <div class="bar-count">175</div>
+    </div>
+    <div class="theme-bar-row">
+      <div class="bar-label">Skeptical</div>
+      <div class="bar-track"><div class="bar-fill gray" data-width="50"></div></div>
+      <div class="bar-count">124</div>
+    </div>
+    <div class="theme-bar-row">
+      <div class="bar-label">Anxiety / Obsession</div>
+      <div class="bar-track"><div class="bar-fill rust" data-width="35"></div></div>
+      <div class="bar-count">88</div>
+    </div>
+    <div class="theme-bar-row">
+      <div class="bar-label">Acted on Score</div>
+      <div class="bar-track"><div class="bar-fill teal" data-width="22"></div></div>
+      <div class="bar-count">55</div>
+    </div>
+    <div class="theme-bar-row">
+      <div class="bar-label">Awareness, No Action</div>
+      <div class="bar-track"><div class="bar-fill red" data-width="20"></div></div>
+      <div class="bar-count">50</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 5: BEHAVIORAL SEGMENTS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide dark" id="segments" data-slide="5">
+  <div class="section-label">04, Segments</div>
+  <h2 class="slide-title">Four behavioral <em>profiles</em> emerged</h2>
+  <div class="rule"></div>
+  <p class="slide-body">Thematic coding surfaced four distinct ways users relate to their recovery data, each with different product needs.</p>
+
+  <div class="seg-grid" style="margin-top:28px">
+    <div class="seg-card orange">
+      <div class="seg-n">248</div>
+      <div class="seg-name">🟠 Friction-Stuck</div>
+      <div class="seg-desc">Engaged with data, want to act, but face real barriers: conflicting schedules, unclear guidance, accuracy doubts, no actionable path. <em>Largest segment by far.</em></div>
+    </div>
+    <div class="seg-card green">
+      <div class="seg-n">126</div>
+      <div class="seg-name">🟢 Changers</div>
+      <div class="seg-desc">Report meaningfully changing habits, sleep routines, alcohol, training load, because of recovery tracking. Often describe a specific turning-point moment.</div>
+    </div>
+    <div class="seg-card blue">
+      <div class="seg-n">55</div>
+      <div class="seg-name">🔵 Responders</div>
+      <div class="seg-desc">Actively respond to specific scores, taking rest days, adjusting intensity. Behavior is episodic rather than habitual. High score trust.</div>
+    </div>
+    <div class="seg-card red">
+      <div class="seg-n">50</div>
+      <div class="seg-name">🔴 Watchers</div>
+      <div class="seg-desc">"Train anyway," "doesn't influence what I do." Data is informational, not actionable. Often skeptical of accuracy or value.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 6: VOICE OF USER -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide" data-slide="6">
+  <div class="section-label">05, Voice of User</div>
+  <h2 class="slide-title">What people actually <em>said</em></h2>
+  <div class="rule"></div>
+
+  <div class="quote-card">
+    <blockquote>"I finally did it, after years of resisting wearables, I've adopted a Garmin watch. I always avoided getting one because I didn't want more data and notifications... but seeing my sleep data was a turning point."</blockquote>
+    <div class="qsource">r/Garmin &nbsp;·&nbsp; 1,052 upvotes &nbsp;·&nbsp; Behaviour Change</div>
+  </div>
+
+  <div class="quote-card" style="margin-top: 16px; background: rgba(200,73,42,.08); color: var(--ink);">
+    <blockquote style="color: var(--ink);">"I've been using Whoop pretty consistently, but I'm starting to wonder if I'm getting any real value out of the data. I try to meditate, keep decent sleep routines, but I don't know what to actually change."</blockquote>
+    <div class="qsource" style="color: var(--accent);">r/whoop &nbsp;·&nbsp; Friction / Barriers</div>
+  </div>
+
+  <div class="quote-card" style="margin-top: 16px;">
+    <blockquote>"Paying attention to sleep, stress, body battery, and SpO₂ on my Garmin led me to uncover a real sleep-breathing issue. Treating it significantly improved my sleep, energy, and performance."</blockquote>
+    <div class="qsource">r/Garmin &nbsp;·&nbsp; 250 upvotes &nbsp;·&nbsp; Acted on Score</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 7: COMMUNITY DIFFERENCES -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide dark" data-slide="7">
+  <div class="section-label">06, Cross-Community</div>
+  <h2 class="slide-title">Persona differs <em>by platform</em></h2>
+  <div class="rule"></div>
+  <p class="slide-body">Sentiment and behavioral patterns vary meaningfully across communities, suggesting different user personas exist within the same product category, each requiring different communication and product strategies.</p>
+
+  <div class="seg-grid" style="margin-top: 32px;">
+    <div class="seg-card green" style="background: rgba(46,158,91,.08); border-color: rgba(46,158,91,.3);">
+      <div class="seg-name" style="color: #2e9e5b;">r/whoop</div>
+      <div class="seg-desc" style="color: rgba(247,245,240,.6);">Highest positive sentiment. Identity-driven users who embrace the platform holistically. Respond to motivation, community, and achievement framing.</div>
+    </div>
+    <div class="seg-card orange" style="background: rgba(224,123,32,.08); border-color: rgba(224,123,32,.3);">
+      <div class="seg-name" style="color: #e07b20;">r/ouraring</div>
+      <div class="seg-desc" style="color: rgba(247,245,240,.6);">Wellness-oriented, often female users. Highly sensitive to recommendations that ignore biological context (e.g., menstrual cycle). Expect personalization.</div>
+    </div>
+    <div class="seg-card blue" style="background: rgba(40,114,200,.08); border-color: rgba(40,114,200,.3);">
+      <div class="seg-name" style="color: #2872c8;">r/QuantifiedSelf</div>
+      <div class="seg-desc" style="color: rgba(247,245,240,.6);">Data-first, methodologically critical. Most skeptical of accuracy. Want raw data access and transparent algorithms, not black-box scores.</div>
+    </div>
+    <div class="seg-card red" style="background: rgba(200,50,50,.08); border-color: rgba(200,50,50,.3);">
+      <div class="seg-name" style="color: #c83232;">r/Garmin</div>
+      <div class="seg-desc" style="color: rgba(247,245,240,.6);">Most vocal community. Performance athletes and long-term users. Strong trust in hardware but deeply skeptical of paywalled insights and subscription creep.</div>
+    </div>
+  </div>
+
+  <div class="finding" style="margin-top:24px">
+    <div class="ftag">Implication</div>
+    <p>A single product experience cannot optimally serve all four personas. Segment-aware UX and communication design is a meaningful opportunity for any platform in this space.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 8: IMPLICATIONS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide" data-slide="8">
+  <div class="section-label">07, Limitations</div>
+  <h2 class="slide-title">Where this study <em>stops</em></h2>
+  <div class="rule"></div>
+
+  <ul class="insight-list">
+    <li>
+      <div class="insight-num">1</div>
+      <div class="insight-content">
+        <div class="ititle">Sample</div>
+        <div class="ibody">Reddit skews toward engaged, opinionated users. The silent majority of wearable owners is absent. Findings characterize vocal communities, not the broader population.</div>
+      </div>
+    </li>
+    <li>
+      <div class="insight-num">2</div>
+      <div class="insight-content">
+        <div class="ititle">Observational only</div>
+        <div class="ibody">The study captures what users say publicly, not what they do. No causal claims are made. Behavioral tracking data would be needed to confirm whether reported friction maps to actual drop-off.</div>
+      </div>
+    </li>
+    <li>
+      <div class="insight-num">3</div>
+      <div class="insight-content">
+        <div class="ititle">Coding</div>
+        <div class="ibody">Keyword pattern matching misses irony and context-dependent language. A conservative threshold was applied throughout. Unclassified items reflect ambiguity, not missing signal.</div>
+      </div>
+    </li>
+    <li>
+      <div class="insight-num">4</div>
+      <div class="insight-content">
+        <div class="ititle">Scope</div>
+        <div class="ibody">Four communities only. Fitbit, Apple Watch, and Samsung Health users are absent. No demographic data available. English language only. Data spans 2023 to 2026 without controlling for product or pricing changes.</div>
+      </div>
+    </li>
+    <li>
+      <div class="insight-num">5</div>
+      <div class="insight-content">
+        <div class="ititle">Primary data</div>
+        <div class="ibody">None, by design. Netnography at this stage surfaces the right questions for follow-on interviews. A qualitative study with the Friction-Stuck segment would add depth this study cannot produce alone.</div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="finding">
+    <div class="ftag">What this does not change</div>
+    <p>The friction finding held across four communities with different user personas. The 68% classification rate reflects conservative coding, not weak signal. Findings stand within their defined scope.</p>
+  </div>
+</section>
+
+<section class="slide" id="implications" data-slide="9">
+  <div class="section-label">08, Implications</div>
+  <h2 class="slide-title">What this means for <em>product</em></h2>
+  <div class="rule"></div>
+
+  <ul class="insight-list">
+    <li>
+      <div class="insight-num">1</div>
+      <div class="insight-content">
+        <div class="ititle">Close the friction gap before adding more features</div>
+        <div class="ibody">The biggest opportunity is not more metrics, it's clearer, more prescriptive guidance for the 248 Friction-Stuck users. "Here is what to do today based on your score" converts passive trackers into active responders without requiring new hardware or data.</div>
+      </div>
+    </li>
+    <li>
+      <div class="insight-num">2</div>
+      <div class="insight-content">
+        <div class="ititle">Anxiety is an underappreciated side effect</div>
+        <div class="ibody">88 items surfaced anxiety and obsession language around scores. Platforms that surface scores without contextual guidance risk creating unhealthy data relationships, a growing product liability as clinical-grade claims increase.</div>
+      </div>
+    </li>
+    <li>
+      <div class="insight-num">3</div>
+      <div class="insight-content">
+        <div class="ititle">Community persona should drive segmentation</div>
+        <div class="ibody">r/whoop users respond to motivation and identity. r/QuantifiedSelf users want methodology and transparency. r/ouraring users need biological context. Persona-aware product design is a competitive differentiator, not a nice-to-have.</div>
+      </div>
+    </li>
+    <li>
+      <div class="insight-num">4</div>
+      <div class="insight-content">
+        <div class="ititle">AI coaching is the unlock, but only if prescriptive</div>
+        <div class="ibody">The Friction-Stuck segment's core complaint is "I know my score, I don't know what to change." This is precisely the gap AI coaching can close. The opportunity is real; the design challenge is making recommendations specific, actionable, and trusted.</div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SLIDE 9: CLOSE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="slide dark" data-slide="9">
+  <div class="section-label">09, Close</div>
+  <h2 class="slide-title">From a researcher who has <em>been there</em></h2>
+  <div class="rule"></div>
+  <p class="slide-body">This project sits at the intersection of personal passion and professional rigor. As a former international-level athlete who has tracked, ignored, obsessed over, and eventually learned from performance data firsthand, this research question is not abstract. It is the question I have lived.</p>
+
+  <div class="final-grid" style="margin-top:36px">
+    <div class="final-card">
+      <div class="fc-num">Research craft</div>
+      <div class="fc-title">Mixed-methods design</div>
+      <div class="fc-body">Qualitative-led thematic analysis with quantitative sentiment validation. Zero budget. Public data only. Reproducible methodology.</div>
+    </div>
+    <div class="final-card">
+      <div class="fc-num">Domain expertise</div>
+      <div class="fc-title">Sports × AI × Behavior</div>
+      <div class="fc-body">Decade of competitive athletic experience informing sharper research questions and more nuanced interpretation of behavioral language.</div>
+    </div>
+    <div class="final-card">
+      <div class="fc-num">Product relevance</div>
+      <div class="fc-title">Commercially actionable</div>
+      <div class="fc-body">Four product implications directly applicable to Whoop, Oura, Garmin, Apple, and any AI coaching startup entering this space in 2026.</div>
+    </div>
+  </div>
+
+  <div class="finding" style="margin-top:36px">
+    <div class="ftag">The answer</div>
+    <p>Recovery tracking doesn't automatically change behavior. But the gap between awareness and action isn't apathy, it's friction. And friction is a solvable design problem.</p>
+  </div>
+</section>
+
+<script>
+// ── INTERSECTION OBSERVER FOR SLIDE ANIMATIONS ──
+const slides = document.querySelectorAll('.slide:not(.cover)');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      // Animate bars when visible
+      entry.target.querySelectorAll('.bar-fill').forEach(bar => {
+        const w = bar.dataset.width;
+        if (w) setTimeout(() => bar.style.width = w + '%', 200);
+      });
+    }
+  });
+}, { threshold: 0.15 });
+
+slides.forEach(s => observer.observe(s));
+
+// ── SCROLL PROGRESS ──
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  progress.style.width = pct + '%';
+});
+
+// ── SLIDE COUNTER ──
+const counter = document.getElementById('counter');
+const allSlides = document.querySelectorAll('.slide');
+const slideObs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const n = entry.target.dataset.slide;
+      if (n) counter.textContent = n.padStart(2,'0') + ' / 10';
+    }
+  });
+}, { threshold: 0.5 });
+allSlides.forEach(s => slideObs.observe(s));
+</script>
+
+</body>
+</html>
